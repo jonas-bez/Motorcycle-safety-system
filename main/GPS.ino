@@ -1,11 +1,9 @@
-void GetStatusOfGPS() {
+String GetStatusOfGPS() {
   //serialGPS.listen(); //só pode escutar uma serial por vez por isso essa função
 
   bool recebido = false;
   static unsigned long delayPrint;
   unsigned long delayGPS = millis();
-
-  while ((millis() - delayGPS) < 500) {
 
     while (serialGPS.available()) {
       char cIn = serialGPS.read();
@@ -78,10 +76,8 @@ void GetStatusOfGPS() {
 
       //velocidade
       float velocidade;
-      //velocidade = gps1.speed();        //nós
       velocidade = gps1.f_speed_kmph(); //km/h
-      //velocidade = gps1.f_speed_mph();  //milha/h
-      //velocidade = gps1.f_speed_mps();  //milha/segundo
+
 
       Serial.print("Velocidade (km/h): ");
       Serial.println(velocidade, 2); //Conversão de Nós para Km/h
@@ -108,13 +104,8 @@ void GetStatusOfGPS() {
         Serial.print("Precisao (centesimos de segundo): ");
         Serial.println(precisao);
       }
-
-      //float distancia_entre;
-      //distancia_entre = gps1.distance_between(lat1, long1, lat2, long2);
-
-      //float sentido_para;
-      //sentido_para = gps1.course_to(lat1, long1, lat2, long2);
       break;
     }
-  }
+  
+  return "vai dar certo";
 }
