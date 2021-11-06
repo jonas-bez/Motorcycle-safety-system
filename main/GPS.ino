@@ -1,19 +1,17 @@
-String GetStatusOfGPS() {
+void GetStatusOfGPS() {
   bool recebido = false;
-  String message = "";
-
+  
   while (serialGPS.available()) {
     char cIn = serialGPS.read();
     recebido = gps1.encode(cIn);
   }
-
+  
   if (recebido) {
-    message += ("----------------------------------------");
     unsigned long idadeInfo;
     float latitude, longitude;
-
     gps1.f_get_position( & latitude, & longitude, & idadeInfo);
 
+    message = "\n-------------SECURITY SYSTEM-------------";
     message = getLocalization(message, latitude, longitude, idadeInfo);
     message = getDateTime(message, idadeInfo);
     message = getHeight(message);
@@ -21,7 +19,6 @@ String GetStatusOfGPS() {
     message = getDirection(message);
     message = getPrecision(message);
   }
-  return message;
 }
   String getLocalization(String message, float latitude, float longitude, long idadeInfo) {
   if ((latitude != TinyGPS::GPS_INVALID_F_ANGLE) && (longitude != TinyGPS::GPS_INVALID_F_ANGLE)) {

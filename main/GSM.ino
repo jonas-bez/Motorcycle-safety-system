@@ -27,13 +27,9 @@ void GetStatusOfGSM(){
      
      if (mensagemSMS == "123") {
        Serial.println("Chegou Mensagem 123");
-       serialGPS.listen();
-       String message = GetStatusOfGPS();
-       Serial.println("vai tu");
+       Serial.println("ENVIANDO Mensagem ");
        Serial.println(message);
-       serialGSM.listen();
        enviaSMS(telefoneSMS, message);
-       message = "";
      } else if (mensagemSMS == "456") {
        Serial.println("Chegou Mensagem 456");
        enviaSMS(telefoneSMS, "SMS Recebido e Senha 456");
