@@ -1,4 +1,4 @@
-void GetStatusOfGPS() {
+String GetStatusOfGPS() {
   bool recebido = false;
   String message = "";
 
@@ -20,9 +20,8 @@ void GetStatusOfGPS() {
     message = getSpeed(message);
     message = getDirection(message);
     message = getPrecision(message);
-
-    Serial.println(message);
   }
+  return message;
 }
   String getLocalization(String message, float latitude, float longitude, long idadeInfo) {
   if ((latitude != TinyGPS::GPS_INVALID_F_ANGLE) && (longitude != TinyGPS::GPS_INVALID_F_ANGLE)) {
