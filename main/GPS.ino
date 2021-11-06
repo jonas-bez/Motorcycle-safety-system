@@ -1,111 +1,133 @@
-String GetStatusOfGPS() {
-  //serialGPS.listen(); //só pode escutar uma serial por vez por isso essa função
-
+void GetStatusOfGPS() {
   bool recebido = false;
-  static unsigned long delayPrint;
-  unsigned long delayGPS = millis();
+  String message = "";
 
-    while (serialGPS.available()) {
-      char cIn = serialGPS.read();
-      recebido = (gps1.encode(cIn) || recebido); //Verifica até receber o primeiro sinal dos satelites
-    }
+  while (serialGPS.available()) {
+    char cIn = serialGPS.read();
+    recebido = gps1.encode(cIn);
+  }
 
-    if ((recebido) && ((millis() - delayPrint) > 1000)) { //Mostra apenas após receber o primeiro sinal. Após o primeiro sinal, mostra a cada segundo.
-      delayPrint = millis();
+  if (recebido) {
+    message += ("----------------------------------------");
+    unsigned long idadeInfo;
+    float latitude, longitude;
 
-      Serial.println("----------------------------------------");
+    gps1.f_get_position( & latitude, & longitude, & idadeInfo);
 
-      //Latitude e Longitude
-      //long latitude, longitude;
-      float latitude, longitude; //As variaveis podem ser float, para não precisar fazer nenhum cálculo
+    message = getLocalization(message, latitude, longitude, idadeInfo);
+    message = getDateTime(message, idadeInfo);
+    message = getHeight(message);
+    message = getSpeed(message);
+    message = getDirection(message);
+    message = getPrecision(message);
 
-      unsigned long idadeInfo;
-      gps1.f_get_position( & latitude, & longitude, & idadeInfo); //O método f_get_position é mais indicado para retornar as coordenadas em variáveis float, para não precisar fazer nenhum cálculo
+    Serial.println(message);
+  }
+}
+  String getLocalization(String message, float latitude, float longitude, long idadeInfo) {
+  if ((latitude != TinyGPS::GPS_INVALID_F_ANGLE) && (longitude != TinyGPS::GPS_INVALID_F_ANGLE)) {
+    message += "\n";
+    message += ("Link para Google Maps:   https://maps.google.com/maps/?&z=10&q=");
+    message += String(latitude, 6);
+    message += ",";
+    message += String(longitude, 6);
+  }
 
-      if (latitude != TinyGPS::GPS_INVALID_F_ANGLE) {
-        Serial.print("Latitude: ");
-        Serial.println(latitude, 6); //Mostra a latitude com a precisão de 6 dígitos decimais
-      }
+  if (latitude != TinyGPS::GPS_INVALID_F_ANGLE) {
+    message += "\n";
+    message += ("Latitude: ");
+    message += String(latitude, 6);
+  }
 
-      if (longitude != TinyGPS::GPS_INVALID_F_ANGLE) {
-        Serial.print("Longitude: ");
-        Serial.println(longitude, 6); //Mostra a longitude com a precisão de 6 dígitos decimais
-      }
+  if (longitude != TinyGPS::GPS_INVALID_F_ANGLE) {
+    message += "\n";
+    message += String("Longitude: ");
+    message += String(longitude, 6);
+  }
 
-      if ((latitude != TinyGPS::GPS_INVALID_F_ANGLE) && (longitude != TinyGPS::GPS_INVALID_F_ANGLE)) {
-        Serial.print("Link para Google Maps:   https://maps.google.com/maps/?&z=10&q=");
-        Serial.print(latitude, 6);
-        Serial.print(",");
-        Serial.println(longitude, 6);
-      }
+  if (idadeInfo != TinyGPS::GPS_INVALID_AGE) {
+    message += "\n";
+    message += ("Idade da Informacao (ms): ");
+    message += (idadeInfo);
+  }
+  return message;
+}
 
-      if (idadeInfo != TinyGPS::GPS_INVALID_AGE) {
-        Serial.print("Idade da Informacao (ms): ");
-        Serial.println(idadeInfo);
-      }
+String getDateTime(String message, unsigned long idadeInfo) {
+  int ano;
+  byte mes, dia, hora, minuto, segundo, centesimo;
+  gps1.crack_datetime( & ano, & mes, & dia, & hora, & minuto, & segundo, & centesimo, & idadeInfo);
+  //data
+  message += "\n";
+  message += "Data (GMT): ";
+  message += String(dia);
+  message += "/";
+  message += String(mes);
+  message += "/";
+  message += String(ano);
 
-      //Dia e Hora
-      int ano;
-      byte mes, dia, hora, minuto, segundo, centesimo;
-      gps1.crack_datetime( & ano, & mes, & dia, & hora, & minuto, & segundo, & centesimo, & idadeInfo);
+  //Hora
+  message += "\n";
+  message += "Horario (GMT): ";
+  message += String(hora - 3);
+  message += ":";
+  message += String(minuto);
+  message += ":";
+  message += String(segundo);
+  message += ":";
+  message += String(centesimo);
 
-      Serial.print("Data (GMT): ");
-      Serial.print(dia);
-      Serial.print("/");
-      Serial.print(mes);
-      Serial.print("/");
-      Serial.println(ano);
+  return message;
+}
 
-      Serial.print("Horario (GMT): ");
-      Serial.print(hora - 3);
-      Serial.print(":");
-      Serial.print(minuto);
-      Serial.print(":");
-      Serial.print(segundo);
-      Serial.print(":");
-      Serial.println(centesimo);
+String getHeight(String message) {
+  float altitudeGPS;
+  altitudeGPS = gps1.f_altitude();
+  if ((altitudeGPS != TinyGPS::GPS_INVALID_ALTITUDE) && (altitudeGPS != 1000000)) {
+    message += "\n";
+    message += "Altitude (cm): ";
+    message += String(altitudeGPS);
+  }
+  return message;
+}
 
-      //altitude
-      float altitudeGPS;
-      altitudeGPS = gps1.f_altitude();
+String getSpeed(String message) {
 
-      if ((altitudeGPS != TinyGPS::GPS_INVALID_ALTITUDE) && (altitudeGPS != 1000000)) {
-        Serial.print("Altitude (cm): ");
-        Serial.println(altitudeGPS);
-      }
+  float velocidade;
+  velocidade = gps1.f_speed_kmph(); //km/h
 
-      //velocidade
-      float velocidade;
-      velocidade = gps1.f_speed_kmph(); //km/h
+  message += "\n";
+  message += "Velocidade (km/h): ";
+  message += String(velocidade, 2); //Conversão de Nós para Km/h
+  return message;
+}
 
+String getDirection(String message) {
+  unsigned long sentido;
+  sentido = gps1.course();
 
-      Serial.print("Velocidade (km/h): ");
-      Serial.println(velocidade, 2); //Conversão de Nós para Km/h
+  message += "\n";
+  message += "Sentido (grau): ";
+  message += String(float(sentido) / 100, 2);
+  return message;
+}
 
-      //sentito (em centesima de graus)
-      unsigned long sentido;
-      sentido = gps1.course();
+String getPrecision(String message) {
+  unsigned short satelites;
+  unsigned long precisao;
+  satelites = gps1.satellites();
+  precisao = gps1.hdop();
 
-      Serial.print("Sentido (grau): ");
-      Serial.println(float(sentido) / 100, 2);
+  if (satelites != TinyGPS::GPS_INVALID_SATELLITES) {
+    message += "\n";
+    message += "Satelites: ";
+    message += String(satelites);
+  }
 
-      //satelites e precisão
-      unsigned short satelites;
-      unsigned long precisao;
-      satelites = gps1.satellites();
-      precisao = gps1.hdop();
-
-      if (satelites != TinyGPS::GPS_INVALID_SATELLITES) {
-        Serial.print("Satelites: ");
-        Serial.println(satelites);
-      }
-
-      if (precisao != TinyGPS::GPS_INVALID_HDOP) {
-        Serial.print("Precisao (centesimos de segundo): ");
-        Serial.println(precisao);
-      }
-      break;
-    }
-  
-  return "vai dar certo";
+  if (precisao != TinyGPS::GPS_INVALID_HDOP) {
+    message += "\n";
+    message += "Precisao (centesimos de segundo): ";
+    message += String(precisao);
+  }
+  return message;
 }
