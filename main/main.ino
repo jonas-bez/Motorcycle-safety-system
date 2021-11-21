@@ -23,6 +23,7 @@ void setup() {
   serialGSM.begin(9600); 
   serialGPS.begin(9600);
   Serial.begin(9600);
+  pinMode(13, OUTPUT);
   configuraGSM();
   Serial.println("SECURITY SYSTEM STARTED!");
   Serial.println(mensagemSMS);

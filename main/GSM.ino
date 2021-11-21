@@ -31,11 +31,13 @@ void GetStatusOfGSM(){
        Serial.println(message);
        enviaSMS(telefoneSMS, message);
      } else if (mensagemSMS == "456") {
-       Serial.println("Chegou Mensagem 456");
-       enviaSMS(telefoneSMS, "SMS Recebido e Senha 456");
+       Serial.println("Redel ativado");
+       enviaSMS(telefoneSMS, "A moto foi desligada.");
+       activeRele();
      } else if (mensagemSMS == "789") {
-       Serial.println("Chegou Mensagem 789");
-       enviaSMS(telefoneSMS, "SMS Recebido e Senha 789");
+       Serial.println("Redel desativado");
+       enviaSMS(telefoneSMS, "A moto pode ser ligada.");
+       desactiveRele();
      } else {
        Serial.println("codigo incorreto");
        enviaSMS(telefoneSMS, "codigo incorreto");
